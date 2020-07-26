@@ -37,10 +37,9 @@ public class PaymentController {
     }
     @GetMapping(value = "/payment/get/{id}")
     public CommonResult getPaymentById(@PathVariable("id") Long id){ //pay attention
-
         System.out.println("id is "+id);
         Payment payment = paymentService.getPaymentById(id);
-        System.out.println("Query is:  "+payment);
+        log.info("Query is:  "+payment);
         log.info("The query result is: "+payment);
 
         if(payment != null){
