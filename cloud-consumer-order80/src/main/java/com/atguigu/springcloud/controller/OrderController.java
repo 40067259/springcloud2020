@@ -2,13 +2,21 @@ package com.atguigu.springcloud.controller;
 
 import com.atguigu.springcloud.entities.CommonResult;
 import com.atguigu.springcloud.entities.Payment;
+import com.atguigu.springcloud.lb.LoadBalancer;
+import com.sun.jndi.toolkit.url.Uri;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.net.URI;
+import java.util.List;
 
 /**
  * @author Fred Zhang
@@ -26,6 +34,10 @@ public class OrderController {
 
     @Resource
     private RestTemplate restTemplate;
+    @Resource
+    private LoadBalancer loadBalancer;// The LB we defined by ourselves
+    @Resource
+    private DiscoveryClient discoveryClient;//拿到注册中心微服务的信息（全部的或者具体每一个的）
 
     @GetMapping("/consumer/payment/create") //Because it comes from front-end side, always GetMapping
     public CommonResult<Payment> create(Payment payment){
@@ -36,5 +48,39 @@ public class OrderController {
     public CommonResult<Payment> getPayment(@PathVariable("id") Long id){
 
         return restTemplate.getForObject(PAYMENT_URL+"/payment/get/"+id,CommonResult.class);
+    }
+//Use restTemplate.getForEntity 可以得到额外的信息
+    @GetMapping("/consumer/payment/getForEntity/{id}")
+    public CommonResult<Payment> getPayment2(@PathVariable("id") Long id){
+
+        ResponseEntity<CommonResult> entity = restTemplate.getForEntity(PAYMENT_URL + "/payment/get/" + id, CommonResult.class);
+        log.info(entity.getStatusCode()+"/t"+entity.getHeaders());//额外信息
+        if(entity.getStatusCode().is2xxSuccessful()){
+            return entity.getBody();
+        }else{
+            return new CommonResult<>(444,"Failed to get messages");
+        }
+    }
+
+    @GetMapping("/consumer/payment/createForEntity") //Because it comes from front-end side, always GetMapping
+    public CommonResult<Payment> create2(Payment payment){
+        //浏览器只能发get请求，但是底层的实质是调用服务端的Post
+        ResponseEntity<CommonResult> entity = restTemplate.postForEntity(PAYMENT_URL + "/payment/create", payment, CommonResult.class);
+        log.info(entity.getStatusCode()+"/t"+entity.getBody());
+        if(entity.getStatusCode().is2xxSuccessful()){
+            return entity.getBody();
+        }else{
+            return new CommonResult<>(444,"Failed to get messages");
+        }
+    }
+    @GetMapping(value = "/consumer/payment/lb")
+    public String getPaymentLB(){
+        List<ServiceInstance> instances = discoveryClient.getInstances("CLOUD-PAYMENT-SERVICE");
+        if(instances == null || instances.size() ==0){
+            return null;
+        }
+        ServiceInstance instanceInUse = loadBalancer.instances(instances);
+        URI uri = instanceInUse.getUri();
+        return restTemplate.getForObject(uri+"/payment/lb",String.class);
     }
 }

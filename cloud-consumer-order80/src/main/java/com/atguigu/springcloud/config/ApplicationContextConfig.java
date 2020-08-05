@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class ApplicationContextConfig {
     @Bean
-    @LoadBalanced
+    //@LoadBalanced     we don't use Ribbon's LB,use we defined LB
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
     }
