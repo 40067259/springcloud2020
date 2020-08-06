@@ -10,6 +10,16 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>cloud-provider-payment8001</module>
+        <module>cloud-consumer-order80</module>
+        <module>cloud-api-commons</module>
+        <module>cloud-eureka-server7001</module>
+        <module>cloud-eureka-server7002</module>
+        <module>cloud-provider-payment8002</module>
+        <module>cloud-provider-payment8004</module>
+        <module>cloud-consumerzk-order80</module>
+        <module>cloud-providerconsul-payment8006</module>
+        <module>cloud-consumerconsul-order80</module>
+        <module>cloud-consumer-feign-order80</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -82,12 +92,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-<!--
+
     <build>
+        <finalName>springcloud2020</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.3.1.RELEASE</version>
                 <configuration>
                     <fork>true</fork>
                     <addResources>true</addResources>
@@ -95,6 +107,6 @@
             </plugin>
         </plugins>
     </build>
--->
+
 
 </project>
